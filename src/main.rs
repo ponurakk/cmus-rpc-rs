@@ -27,7 +27,7 @@ fn main() {
     cmus::tracker::run(
         &conf,
         &debugger,
-        &mut DiscordController::new("961407969986232380", &debugger),
+        &mut DiscordController::new("1267549890213445633", &debugger),
         &mut sleep_time_arc,
     );
 }

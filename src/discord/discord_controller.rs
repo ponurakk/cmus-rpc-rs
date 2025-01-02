@@ -40,13 +40,22 @@ impl DiscordController {
         debugger.log(format!("part_1: {}", part_1).as_str());
         let part_2 = formatter::format(configs.part_two_format.as_str(), &cmus_response);
         debugger.log(format!("part_2: {}", part_2).as_str());
+        let album = formatter::format(configs.album.as_str(), &cmus_response);
+        let title = formatter::format(configs.title.as_str(), &cmus_response);
+        let default = String::from("cmus");
+        debugger.log(format!("album: {}", album,).as_str());
+
+        let large_image = configs
+            .covers
+            .get(&album)
+            .unwrap_or(configs.covers.get(&title).unwrap_or(&default));
 
         let activity = discord_rich_presence::activity::Activity::new()
             .state(part_2.as_str())
             .details(part_1.as_str())
             .assets(
                 discord_rich_presence::activity::Assets::new()
-                    .large_image(configs.large_image.as_str())
+                    .large_image(large_image)
                     .large_text(configs.large_text.as_str())
                     .small_image(match cmus_response.state {
                         cmus::responce::State::PLAYING => configs.playing_image.as_str(),

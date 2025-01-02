@@ -1,3 +1,7 @@
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::Read;
+
 use crate::args;
 use crate::config::config_file;
 
@@ -9,6 +13,8 @@ pub struct Config {
     pub sleep: u32,
     pub part_one_format: String,
     pub part_two_format: String,
+    pub album: String,
+    pub title: String,
     pub large_image: String,
     pub playing_image: String,
     pub paused_image: String,
@@ -17,6 +23,7 @@ pub struct Config {
     pub paused_text: String,
     pub button_one: (String, String),
     pub button_two: (String, String),
+    pub covers: HashMap<String, String>,
 }
 
 impl Config {
@@ -77,6 +84,8 @@ impl Config {
             } else {
                 parsed_config.part_two_format
             },
+            album: parsed_config.album,
+            title: parsed_config.title,
             large_image: if args_matches.is_present("large_image") {
                 args_matches.value_of("large_image").unwrap().to_string()
             } else {
@@ -131,6 +140,26 @@ impl Config {
             } else {
                 parsed_config.button_two
             },
+            covers: {
+                let matches_path = format!(
+                    "{}/{}",
+                    dirs::config_dir().unwrap_or_default().to_str().unwrap(),
+                    "cmus-rps-rs/match.txt"
+                );
+                let mut file = File::open(matches_path).unwrap();
+                let mut text: String = String::new();
+                file.read_to_string(&mut text).unwrap();
+                let mut map = HashMap::new();
+
+                for line in text.lines() {
+                    let mut key_value = line.splitn(2, ';');
+                    if let (Some(key), Some(value)) = (key_value.next(), key_value.next()) {
+                        map.insert(key.to_string(), value.to_string());
+                    }
+                }
+
+                map
+            },
         };
 
         configs
@@ -150,6 +179,8 @@ impl Config {
             sleep: 5 * 60, // 5 minutes
             part_one_format: "%artist% - %title%".to_string(),
             part_two_format: "%album%".to_string(),
+            album: "%album%".to_string(),
+            title: "%title%".to_string(),
             large_image: "cmus".to_string(),
             playing_image: "play_icon_2".to_string(),
             paused_image: "pause_icon_2".to_string(),
@@ -161,6 +192,7 @@ impl Config {
                 "https://github.com/anas-elgarhy/cmus-rps-rs".to_string(),
             ),
             button_two: ("".to_string(), "".to_string()),
+            covers: HashMap::new(),
         }
     }
 
