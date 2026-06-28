@@ -18,7 +18,7 @@ impl DiscordController {
         match controller.drpc.connect() {
             Ok(_) => debugger.log("Connected to Discord"),
             Err(e) => {
-                debugger.log_error(&format!("Failed to connect to Discord: {}", e));
+                debugger.log_error(&format!("Failed to connect to Discord: {e}"));
                 std::process::exit(1);
             }
         }
@@ -37,13 +37,13 @@ impl DiscordController {
         debugger.log("Updating presence");
 
         let part_1 = formatter::format(configs.part_one_format.as_str(), &cmus_response);
-        debugger.log(format!("part_1: {}", part_1).as_str());
+        debugger.log(format!("part_1: {part_1}").as_str());
         let part_2 = formatter::format(configs.part_two_format.as_str(), &cmus_response);
-        debugger.log(format!("part_2: {}", part_2).as_str());
+        debugger.log(format!("part_2: {part_2}").as_str());
         let album = formatter::format(configs.album.as_str(), &cmus_response);
         let title = formatter::format(configs.title.as_str(), &cmus_response);
         let default = String::from("cmus");
-        debugger.log(format!("album: {}", album,).as_str());
+        debugger.log(format!("album: {album}").as_str());
 
         let large_image = configs
             .covers
@@ -53,6 +53,7 @@ impl DiscordController {
         let activity = discord_rich_presence::activity::Activity::new()
             .state(part_2.as_str())
             .details(part_1.as_str())
+            .activity_type(discord_rich_presence::activity::ActivityType::Listening)
             .assets(
                 discord_rich_presence::activity::Assets::new()
                     .large_image(large_image)
@@ -66,17 +67,17 @@ impl DiscordController {
                         _ => configs.paused_text.as_str(),
                     }),
             )
-            .buttons(buttons_vec.to_vec());
+            .buttons(buttons_vec.clone());
 
         for _ in 0..3 {
             match self.drpc.set_activity(activity.clone()) {
-                Ok(_) => debugger.log("Activity updated"),
+                Ok(()) => debugger.log("Activity updated"),
                 Err(e) => {
-                    debugger.log_error(&format!("Error updating activity: {}", e));
+                    debugger.log_error(&format!("Error updating activity: {e}"));
                     match self.drpc.reconnect() {
-                        Ok(_) => debugger.log("Reconnected successfully"),
+                        Ok(()) => debugger.log("Reconnected successfully"),
                         Err(e) => {
-                            debugger.log_error(&format!("Failed to reconnect to Discord: {}", e))
+                            debugger.log_error(&format!("Failed to reconnect to Discord: {e}"));
                         }
                     }
                 }
